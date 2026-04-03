@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>競馬GB指数</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;margin:0;padding:0;background:#f2f2f7;color:#1c1c1e;font-size:16px}
+header{background:#fff;padding:12px 16px;border-bottom:0.5px solid #e0e0e5;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:18px;font-weight:600}
+.badge{font-size:11px;padding:3px 8px;border-radius:10px;background:#e8f5e9;color:#2e7d32;font-weight:500}
+.badge.dart{background:#e3f2fd;color:#1565c0}
+.section{background:#fff;margin:12px 16px;border-radius:12px;overflow:hidden}
+.section-header{padding:12px 16px;font-size:13px;font-weight:600;color:#8e8e93;border-bottom:0.5px solid #f0f0f5;display:flex;align-items:center;justify-content:space-between}
+.row{padding:12px 16px;border-bottom:0.5px solid #f0f0f5;display:flex;align-items:center;gap:12px}
+.row:last-child{border-bottom:none}
+.row label{flex:0 0 72px;font-size:14px;color:#8e8e93}
+.row select,.row input{flex:1;border:none;outline:none;font-size:16px;background:transparent;color:#1c1c1e;min-height:36px}
+.seg{display:flex;background:#f2f2f7;border-radius:8px;padding:2px;margin:12px 16px}
+.seg-btn{flex:1;padding:7px;border:none;background:transparent;border-radius:7px;font-size:14px;font-weight:500;color:#8e8e93;cursor:pointer;transition:all .2s}
+.seg-btn.on{background:#fff;color:#1c1c1e;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.btn{display:block;width:calc(100% - 32px);margin:12px 16px;padding:14px;border-radius:12px;border:none;font-size:17px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-primary{background:#007aff;color:#fff}
+.btn-primary:active{background:#0062cc;transform:scale(0.98)}
+.btn-secondary{background:#e9e9eb;color:#1c1c1e}
+.btn-danger{background:#ff3b30;color:#fff}
+#drop-zone{margin:12px 16px;border:2px dashed #c7c7cc;border-radius:12px;padding:28px 16px;text-align:center;color:#8e8e93;font-size:14px;background:#fff;cursor:pointer;transition:all .2s}
+#drop-zone.drag-over{border-color:#007aff;background:#e8f3ff}
+#drop-zone input[type=file]{display:none}
+.file-name{font-size:13px;color:#007aff;margin-top:6px;word-break:break-all}
+.odds-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.odds-cell{padding:10px 12px;border-bottom:0.5px solid #f0f0f5;border-right:0.5px solid #f0f0f5}
+.odds-cell:nth-child(even){border-right:none}
+.odds-cell label{display:block;font-size:11px;color:#8e8e93;margin-bottom:4px}
+.odds-cell input{width:100%;border:none;outline:none;font-size:15px;background:transparent}
+#result-section{display:none}
+.result-card{margin:8px 16px;background:#fff;border-radius:12px;overflow:hidden}
+.result-row{display:flex;align-items:center;padding:12px 14px;border-bottom:0.5px solid #f5f5f7;gap:10px}
+.result-row:last-child{border-bottom:none}
+.result-row.highlight{background:#fff8e1}
+.result-row.shinma{background:#f5f5f7;opacity:.7}
+.num-badge{width:28px;height:28px;border-radius:50%;background:#e9e9eb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.num-badge.top1{background:#ff9500;color:#fff}
+.num-badge.top2{background:#34c759;color:#fff}
+.num-badge.top3{background:#007aff;color:#fff}
+.result-main{flex:1;min-width:0}
+.result-name{font-size:15px;font-weight:500}
+.result-sub{font-size:12px;color:#8e8e93;margin-top:2px}
+.score-wrap{text-align:right;flex-shrink:0}
+.score-big{font-size:22px;font-weight:700;line-height:1}
+.score-label{font-size:10px;color:#8e8e93;margin-top:2px}
+.rec-badge{font-size:11px;padding:3px 8px;border-radius:8px;font-weight:600;white-space:nowrap}
+.rec-star{background:#fff3e0;color:#e65100}
+.rec-maru{background:#e8f5e9;color:#2e7d32}
+.rec-sank{background:#e3f2fd;color:#1565c0}
+.rec-x{background:#f5f5f5;color:#9e9e9e}
+.loading{text-align:center;padding:32px;color:#8e8e93}
+.loading-spinner{width:32px;height:32px;border:3px solid #e0e0e5;border-top-color:#007aff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-msg{margin:12px 16px;padding:14px;background:#fff2f2;border-radius:12px;color:#ff3b30;font-size:14px}
+.setup-msg{margin:12px 16px;padding:14px;background:#fff8e1;border-radius:12px;color:#f57c00;font-size:13px;line-height:1.6}
+.footer{text-align:center;padding:24px 16px;color:#c7c7cc;font-size:12px}
+.sep{height:20px;background:transparent}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>競馬GB指数</h1>
+  <span class="badge dart" id="model-badge">ダートv2</span>
+</header>
+
+<!-- モデル選択 -->
+<div class="sep"></div>
+<div class="seg" id="model-seg">
+  <button class="seg-btn" onclick="setModel('turf')">芝v2</button>
+  <button class="seg-btn on" onclick="setModel('dart')">ダートv2</button>
+</div>
+
+<!-- 入力方法 -->
+<div class="seg" id="mode-seg" style="margin-top:0">
+  <button class="seg-btn on" onclick="setMode('csv')">CSVアップロード</button>
+  <button class="seg-btn" onclick="setMode('manual')">手動入力</button>
+</div>
+
+<!-- CSV入力 -->
+<div id="csv-section">
+  <div id="drop-zone" onclick="document.getElementById('csv-file').click()">
+    <input type="file" id="csv-file" accept=".csv" onchange="onFileSelect(this)">
+    <div style="font-size:32px;margin-bottom:8px">📄</div>
+    <div style="font-weight:500">CSVファイルを選択</div>
+    <div style="font-size:12px;margin-top:4px">出馬表CSVをアップロード</div>
+    <div class="file-name" id="file-name"></div>
+  </div>
+
+  <div class="section" id="odds-section" style="display:none">
+    <div class="section-header">
+      <span>当日オッズ・人気を入力</span>
+      <span style="font-size:12px;color:#007aff;cursor:pointer" onclick="toggleOddsHelp()">?</span>
+    </div>
+    <div id="odds-help" style="display:none;padding:10px 16px;background:#f9f9fb;font-size:12px;color:#666;border-bottom:0.5px solid #f0f0f5">
+      CSVに人気・単勝オッズ列がない場合、馬番順に入力してください。
+      例：1番=3.5倍2人気、2番=8.2倍5人気...
+    </div>
+    <div id="odds-inputs" class="odds-grid"></div>
+  </div>
+</div>
+
+<!-- 手動入力 -->
+<div id="manual-section" style="display:none">
+  <div class="section">
+    <div class="section-header">レース情報</div>
+    <div class="row"><label>場所</label>
+      <select id="m-place"><option>東京</option><option>中山</option><option>阪神</option><option>京都</option><option>中京</option><option>小倉</option><option>福島</option><option>新潟</option><option>函館</option><option>札幌</option></select></div>
+    <div class="row"><label>距離</label><input type="number" id="m-dist" value="1200" placeholder="1200"></div>
+    <div class="row"><label>馬場状態</label>
+      <select id="m-baba"><option>良</option><option>稍</option><option>重</option><option>不</option></select></div>
+    <div class="row"><label>クラス</label>
+      <select id="m-class"><option>未勝利</option><option>1勝</option><option>2勝</option><option>3勝</option><option>ｵｰﾌﾟﾝ</option><option>Ｇ３</option><option>Ｇ２</option><option>Ｇ１</option></select></div>
+  </div>
+  <div id="manual-horses"></div>
+  <button class="btn btn-secondary" onclick="addHorse()">+ 馬を追加</button>
+</div>
+
+<!-- 予測ボタン -->
+<button class="btn btn-primary" id="predict-btn" onclick="predict()">指数を計算する</button>
+
+<!-- ローディング -->
+<div class="loading" id="loading" style="display:none">
+  <div class="loading-spinner"></div>
+  <div>計算中...</div>
+</div>
+
+<!-- エラー -->
+<div class="error-msg" id="error-msg" style="display:none"></div>
+
+<!-- 結果 -->
+<div id="result-section">
+  <div class="section" style="margin:12px 16px 4px">
+    <div class="section-header">
+      <span id="result-title">予測結果</span>
+      <span style="font-size:12px;color:#8e8e93" id="result-count"></span>
+    </div>
+  </div>
+  <div id="result-cards"></div>
+  <div class="footer">GBスコア 0.18以上 ★ = バリューベット推奨<br>新馬戦はモデルの適性外のため参考値</div>
+</div>
+
+<script>
+let currentModel = 'dart';
+let currentMode  = 'csv';
+let selectedFile = null;
+let horseCount   = 0;
+let csvHorseCount= 0;
+
+function setModel(m){
+  currentModel = m;
+  document.querySelectorAll('#model-seg .seg-btn').forEach((b,i)=>{
+    b.classList.toggle('on', (i===0&&m==='turf')||(i===1&&m==='dart'));
+  });
+  const badge = document.getElementById('model-badge');
+  badge.textContent = m==='turf'?'芝v2':'ダートv2';
+  badge.className = 'badge '+(m==='turf'?'turf':'dart');
+}
+
+function setMode(m){
+  currentMode = m;
+  document.querySelectorAll('#mode-seg .seg-btn').forEach((b,i)=>{
+    b.classList.toggle('on', (i===0&&m==='csv')||(i===1&&m==='manual'));
+  });
+  document.getElementById('csv-section').style.display    = m==='csv'?'':'none';
+  document.getElementById('manual-section').style.display = m==='manual'?'':'none';
+}
+
+function onFileSelect(input){
+  selectedFile = input.files[0];
+  if(!selectedFile) return;
+  document.getElementById('file-name').textContent = selectedFile.name;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const lines = text.split('\n').filter(l=>l.trim());
+    csvHorseCount = lines.length - 1;
+    renderOddsInputs(csvHorseCount);
+    document.getElementById('odds-section').style.display = '';
+  };
+  reader.readAsText(selectedFile, 'UTF-8');
+}
+
+function renderOddsInputs(n){
+  const grid = document.getElementById('odds-inputs');
+  let html = '';
+  for(let i=1;i<=n;i++){
+    html += `<div class="odds-cell">
+      <label>${i}番馬</label>
+      <input type="text" id="odds-${i}" placeholder="例: 5.8倍/3人気">
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function toggleOddsHelp(){
+  const el = document.getElementById('odds-help');
+  el.style.display = el.style.display==='none' ? '' : 'none';
+}
+
+let horses = [];
+function addHorse(){
+  horseCount++;
+  const sec = document.getElementById('manual-horses');
+  const div = document.createElement('div');
+  div.className = 'section';
+  div.style.marginTop = '8px';
+  div.id = `horse-${horseCount}`;
+  div.innerHTML = `
+    <div class="section-header">
+      <span>${horseCount}番馬</span>
+      <span style="color:#ff3b30;cursor:pointer;font-size:13px" onclick="removeHorse(${horseCount})">削除</span>
+    </div>
+    <div class="row"><label>馬名</label><input type="text" id="h${horseCount}-name" placeholder="省略可"></div>
+    <div class="row"><label>人気</label><input type="number" id="h${horseCount}-ninki" placeholder="例: 3"></div>
+    <div class="row"><label>単勝オッズ</label><input type="number" step="0.1" id="h${horseCount}-odds" placeholder="例: 6.5"></div>
+    <div class="row"><label>年齢</label><input type="number" id="h${horseCount}-age" placeholder="3"></div>
+    <div class="row"><label>斤量</label><input type="number" step="0.5" id="h${horseCount}-kw" placeholder="55"></div>
+    <div class="row"><label>前走着順</label><input type="number" id="h${horseCount}-prevrank" placeholder="1〜18"></div>
+    <div class="row"><label>前走タイム</label><input type="number" id="h${horseCount}-prevtime" placeholder="例: 1080（秒×10）"></div>
+    <div class="row"><label>間隔（週）</label><input type="number" id="h${horseCount}-interval" placeholder="4"></div>
+    <div class="row"><label>前走馬体重</label><input type="number" id="h${horseCount}-prevbw" placeholder="460"></div>
+  `;
+  sec.appendChild(div);
+}
+
+function removeHorse(id){
+  const el = document.getElementById(`horse-${id}`);
+  if(el) el.remove();
+}
+
+function getVal(id){ return document.getElementById(id)?.value || ''; }
+
+async function predict(){
+  document.getElementById('error-msg').style.display = 'none';
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('loading').style.display = '';
+  document.getElementById('predict-btn').disabled = true;
+
+  try {
+    let response;
+
+    if(currentMode === 'csv'){
+      if(!selectedFile){ throw new Error('CSVファイルを選択してください'); }
+      const fd = new FormData();
+      fd.append('file', selectedFile);
+      fd.append('model', currentModel);
+
+      // オッズ入力を収集
+      const oddsList=[], ninkiList=[];
+      for(let i=1;i<=csvHorseCount;i++){
+        const v = (document.getElementById(`odds-${i}`)?.value||'').trim();
+        const m = v.match(/([\d.]+)\s*[倍/]\s*(\d+)/);
+        if(m){ oddsList.push(m[1]); ninkiList.push(m[2]); }
+        else { oddsList.push(''); ninkiList.push(''); }
+      }
+      if(oddsList.some(v=>v)){ fd.append('odds_input', oddsList.join(',')); }
+      if(ninkiList.some(v=>v)){ fd.append('ninki_input', ninkiList.join(',')); }
+
+      response = await fetch('/api/predict_csv', {method:'POST', body:fd});
+
+    } else {
+      // 手動入力
+      const place = getVal('m-place'), dist = getVal('m-dist');
+      const baba  = getVal('m-baba'),  cls  = getVal('m-class');
+      const horseDivs = document.querySelectorAll('[id^="horse-"]');
+      if(horseDivs.length===0){ throw new Error('馬を追加してください'); }
+
+      const horsesData = [];
+      horseDivs.forEach(div=>{
+        const n = div.id.split('-')[1];
+        horsesData.push({
+          '場所': place, '距離': dist, '馬場状態': baba, 'クラス名': cls,
+          '馬名':      getVal(`h${n}-name`),
+          '人気':      getVal(`h${n}-ninki`),
+          '単勝オッズ': getVal(`h${n}-odds`),
+          '年齢':      getVal(`h${n}-age`),
+          '斤量':      getVal(`h${n}-kw`),
+          '前走着順':   getVal(`h${n}-prevrank`),
+          '前走走破タイム': getVal(`h${n}-prevtime`),
+          '間隔':       getVal(`h${n}-interval`),
+          '前走馬体重':  getVal(`h${n}-prevbw`),
+          '枠番': n, '馬番': n,
+        });
+      });
+
+      response = await fetch('/api/predict', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({model: currentModel, horses: horsesData})
+      });
+    }
+
+    if(!response.ok){
+      const err = await response.json();
+      throw new Error(err.error || 'サーバーエラー');
+    }
+
+    const data = await response.json();
+    renderResults(data.results);
+
+  } catch(e){
+    document.getElementById('error-msg').textContent = e.message;
+    document.getElementById('error-msg').style.display = '';
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('predict-btn').disabled = false;
+  }
+}
+
+function renderResults(results){
+  const sec   = document.getElementById('result-section');
+  const cards = document.getElementById('result-cards');
+  const count = document.getElementById('result-count');
+
+  count.textContent = `${results.length}頭`;
+  document.getElementById('result-title').textContent =
+    currentModel==='turf' ? '芝v2 予測結果' : 'ダートv2 予測結果';
+
+  const recMap = {
+    '★ バリューベット': ['rec-badge rec-star','★'],
+    '○ 対抗候補':       ['rec-badge rec-maru','○'],
+    '△ 検討':          ['rec-badge rec-sank','△'],
+    '× 新馬':          ['rec-badge rec-x','×'],
+    '× 新馬除外':       ['rec-badge rec-x','×'],
+  };
+
+  let html = '<div class="result-card">';
+  results.forEach((r, idx)=>{
+    const score = r['GBスコア'];
+    const isTop = score >= 0.18 && r['推奨']!=='× 新馬' && r['推奨']!=='× 新馬除外';
+    const isShin= r['推奨']==='× 新馬' || r['推奨']==='× 新馬除外';
+    const rankClass = idx===0?'top1':idx===1?'top2':idx===2?'top3':'';
+    const [recClass, recText] = recMap[r['推奨']] || ['',''];
+    const scoreColor = score>=0.18?'#1D9E75':score>=0.16?'#5DCAA5':score>=0.14?'#EF9F27':'#888';
+    const rowClass = isTop?'highlight':isShin?'shinma':'';
+
+    html += `<div class="result-row ${rowClass}">
+      <div class="num-badge ${rankClass}">${idx+1}</div>
+      <div class="result-main">
+        <div class="result-name">${r['馬番']}番 ${r['馬名']||''}</div>
+        <div class="result-sub">${r['人気']?r['人気']+'人気':''} ${r['単勝オッズ']?r['単勝オッズ']+'倍':''}</div>
+      </div>
+      ${recClass?`<span class="${recClass}">${recText}</span>`:''}
+      <div class="score-wrap">
+        <div class="score-big" style="color:${scoreColor}">${(score*100).toFixed(1)}</div>
+        <div class="score-label">GBスコア</div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  cards.innerHTML = html;
+  sec.style.display = '';
+  sec.scrollIntoView({behavior:'smooth'});
+}
+
+// 初期化
+setMode('csv');
+</script>
+</body>
+</html>
