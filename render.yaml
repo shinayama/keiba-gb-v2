@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: keiba-gb-index
+    name: keiba-gb-v2
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --timeout 300 --workers 1
